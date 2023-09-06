@@ -27,6 +27,10 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   final List<Question> personalCharacteristicsQuiz = [
+    Question(
+      "When I am in trouble, I can talk with my friends casually",
+      ['Disagree', 'Somewhat Disagree', 'Somewhat Agree', 'Agree'],
+    ),
     
     Question(
       "When I am in trouble, I can talk with my friends causally",
@@ -128,7 +132,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   ];
 
-  Map<String, int> selectedOptionsCount = {};
+  Map<String, String> selectedOptions = {};
 
   @override
   Widget build(BuildContext context) {
@@ -139,16 +143,14 @@ class _QuizScreenState extends State<QuizScreen> {
       body: ListView.builder(
         itemCount: personalCharacteristicsQuiz.length,
         itemBuilder: (BuildContext context, int index) {
+          final question = personalCharacteristicsQuiz[index];
           return QuestionWidget(
-            question: personalCharacteristicsQuiz[index].question,
-            options: personalCharacteristicsQuiz[index].options,
+            question: question.question,
+            options: question.options,
+            selectedOption: selectedOptions[question.question] ?? '',
             onOptionSelected: (option) {
               setState(() {
-                if (selectedOptionsCount.containsKey(option)) {
-                  selectedOptionsCount[option];
-                } else {
-                  selectedOptionsCount[option] = 1;
-                }
+                selectedOptions[question.question] = option;
               });
             },
           );
@@ -156,6 +158,14 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
+          // Count the selected options
+          Map<String, int> selectedOptionsCount = {};
+
+          selectedOptions.values.forEach((selectedOption) {
+            selectedOptionsCount[selectedOption] =
+                (selectedOptionsCount[selectedOption] ?? 0) + 1;
+          });
+
           // Show the selected options count
           showDialog(
             context: context,
@@ -186,14 +196,17 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 }
+
 class QuestionWidget extends StatelessWidget {
   final String question;
   final List<String> options;
+  final String selectedOption;
   final Function(String) onOptionSelected;
 
   QuestionWidget({
     required this.question,
     required this.options,
+    required this.selectedOption,
     required this.onOptionSelected,
   });
 
@@ -217,9 +230,9 @@ class QuestionWidget extends StatelessWidget {
               return RadioListTile(
                 title: Text(option),
                 value: option,
-                groupValue: null, // You should specify the selected value here
+                groupValue: selectedOption,
                 onChanged: (value) {
-                  onOptionSelected(value!);
+                  onOptionSelected(value as String); // Cast value to String
                 },
               );
             }).toList(),
